@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bashdown"
+version = "1.0.0"
+description = "Show a markdown document with rich in terminal, offering to run bash code blocks."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0",
+]
+authors = [{ name = "Lars Pontoppidan" }]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/larspontoppidan/lpptools"
+Repository = "https://github.com/larspontoppidan/lpptools"
+
+[project.scripts]
+bashdown = "lpptools.bashdown:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lpptools"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]
