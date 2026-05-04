@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "alreadythere"
+version = "1.1.0"
+description = "Check whether files in input folders exist in a search folder (by hash)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+authors = [{ name = "Lars Pontoppidan" }]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/larspontoppidan/lpptools"
+Repository = "https://github.com/larspontoppidan/lpptools"
+
+[project.scripts]
+alreadythere = "lpptools.alreadythere:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lpptools"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]
