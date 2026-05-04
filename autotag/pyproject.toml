@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autotag"
+version = "1.0.0"
+description = "Tag music files based on folder and filenames."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mutagen>=1.47",
+]
+authors = [{ name = "Lars Pontoppidan" }]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/larspontoppidan/lpptools"
+Repository = "https://github.com/larspontoppidan/lpptools"
+
+[project.scripts]
+autotag = "lpptools.autotag:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lpptools"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]
