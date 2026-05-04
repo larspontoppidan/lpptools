@@ -8,3 +8,7 @@ File name format: `<TrackNumber> - <TrackTitle>.<ext>`
 Embeds `folder.jpg` (if present) as cover art into every file.
 
 Run `autotag --help` for options.
+
+## Author
+
+Lars Ole Pontoppidan, 2026
