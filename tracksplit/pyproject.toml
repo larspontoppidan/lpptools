@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tracksplit"
+version = "0.1.0"
+description = "Split an audio file into tracks based on quiet gaps."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12.1",
+]
+authors = [{ name = "Lars Pontoppidan" }]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/larspontoppidan/lpptools"
+Repository = "https://github.com/larspontoppidan/lpptools"
+
+[project.scripts]
+tracksplit = "lpptools.tracksplit:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lpptools"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]

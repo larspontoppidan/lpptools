@@ -7,6 +7,7 @@ Python utilities for the Linux and MacOS CLI.
 ## Contents
 
 - autotag: Tag music files based on folder and filenames
+- tracksplit: Split an audio file into tracks based on quiet gaps.
 
 ## Install
 
@@ -22,6 +23,8 @@ For local development, clone the repository, then:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e autotag
+pip install -e tracksplit
 autotag --help
+tracksplit --help
 ```
 
