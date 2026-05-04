@@ -3,6 +3,7 @@
 
 import importlib.metadata
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -23,7 +24,7 @@ The markdown --- horizontal rule can be used to show a continue yes/no prompt.
 
 The environment is persisted between bash code block sessions.
 
-bashdown can be used in the shebang in .md markdown files on Linux platforms.
+bashdown can be used in the shebang in .md markdown files on Linux and MacOS platforms.
 """
 
 
@@ -119,13 +120,24 @@ def _userYesNo(description):
 
 
 def _loadEnvFromFile(path: str) -> None:
-    """Update os.environ from key=value lines (as produced by env)."""
-    with open(path, encoding="utf-8", errors="replace") as f:
-        for line in f:
-            line = line.rstrip("\n")
-            if "=" in line:
-                key, _, value = line.partition("=")
-                os.environ[key] = value
+    """Update os.environ from NUL-separated key=value entries (env -0)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    for entry in data.split(b"\0"):
+        if not entry:
+            continue
+        key_b, sep, value_b = entry.partition(b"=")
+        if not sep:
+            continue
+        key = key_b.decode("utf-8", "replace")
+        # Skip exported bash functions; they're multi-line and rarely useful to round-trip.
+        if key.startswith("BASH_FUNC_"):
+            continue
+        os.environ[key] = value_b.decode("utf-8", "replace")
+
+
+def _bashExecutable() -> str:
+    return shutil.which("bash") or "/bin/bash"
 
 
 def _executeBlockPersistEnv(cmds: str):
@@ -134,10 +146,10 @@ def _executeBlockPersistEnv(cmds: str):
     # Run with bash, after commands dump env so we can adapt the values
     script = f'''set -e
 {cmds}
-env > "{env_file}"
+env -0 > "{env_file}"
 '''
     result = subprocess.run(
-        script, shell=True, executable="/usr/bin/bash", env=os.environ.copy()
+        script, shell=True, executable=_bashExecutable(), env=os.environ.copy()
     )
     if os.path.exists(env_file):
         # Don't load the environment from the script if it fails
@@ -181,7 +193,7 @@ def _runBlock(md: str, cmds: list[str], last_block: bool = False):
 
 def main() -> int:
     if "--version" in sys.argv:
-        print(f"bashdown {__version__}")
+        welcome()
         return 0
     if len(sys.argv) < 2:
         welcome()
