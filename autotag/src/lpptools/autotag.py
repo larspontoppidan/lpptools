@@ -2,6 +2,7 @@
 
 Folder name format:  "<Artist> - <Album>"
 File name format:    "<TrackNumber> - <TrackTitle>.<ext>"
+                or:  "<TrackNumber> <TrackTitle>.<ext>"
 
 Embeds folder.jpg (if present) as cover art into every file.
 """
@@ -29,6 +30,9 @@ from mutagen.id3 import (
     TCON,
     TPOS,
     COMM,
+    TCOM,
+    TPE3,
+    TIT1,
 )
 from mutagen.mp3 import MP3
 
@@ -44,7 +48,7 @@ __version__ = _version_str()
 
 
 COVER_FILENAME = "folder.jpg"
-FILENAME_RE = re.compile(r"^\s*(\d+)\s*-\s*(.+?)\s*$")
+FILENAME_RE = re.compile(r"^\s*(\d+)\s*(?:-\s*)?(.+?)\s*$")
 AUDIO_EXTS = {".flac", ".mp3"}
 
 
@@ -59,7 +63,7 @@ def parse_folder(folder: Path) -> tuple[str, str]:
 def parse_filename(stem: str) -> tuple[str, str]:
     m = FILENAME_RE.match(stem)
     if not m:
-        raise ValueError(f"Filename stem {stem!r} does not match '<num> - <title>'")
+        raise ValueError(f"Filename stem {stem!r} does not match '<num> [-] <title>'")
     return m.group(1).lstrip("0") or "0", m.group(2).strip()
 
 
@@ -95,6 +99,9 @@ def write_flac(path: Path, fields: dict, cover: bytes | None,
         "date": "date",
         "genre": "genre",
         "comment": "comment",
+        "composer": "composer",
+        "conductor": "conductor",
+        "work": "work",
     }
     for key, tag in mapping.items():
         val = fields.get(key)
@@ -126,6 +133,9 @@ def write_mp3(path: Path, fields: dict, cover: bytes | None,
         "date": lambda v: TDRC(encoding=3, text=v),
         "genre": lambda v: TCON(encoding=3, text=v),
         "comment": lambda v: COMM(encoding=3, lang="eng", desc="", text=v),
+        "composer": lambda v: TCOM(encoding=3, text=v),
+        "conductor": lambda v: TPE3(encoding=3, text=v),
+        "work": lambda v: TIT1(encoding=3, text=v),
     }
     for key, make in setters.items():
         val = fields.get(key)
@@ -204,6 +214,9 @@ def tag_folder(folder: Path, args: argparse.Namespace) -> int:
             "genre": args.genre,
             "discnumber": args.disc,
             "comment": args.comment,
+            "composer": args.composer,
+            "conductor": args.conductor,
+            "work": args.work,
         }
 
         print(f"tagging: {path.name}")
@@ -237,8 +250,8 @@ def main() -> int:
         action="version",
         version=f"%(prog)s {__version__}",
     )
-    parser.add_argument("folders", nargs="*", type=Path, default=[Path.cwd()],
-                        help="Album folder(s) (default: current directory).")
+    parser.add_argument("folders", nargs="+", type=Path,
+                        help="One or more album folders to process.")
     parser.add_argument("-n", "--dry-run", action="store_true",
                         help="Show what would be done without writing tags.")
     parser.add_argument("-s", "--show", action="store_true",
@@ -247,6 +260,10 @@ def main() -> int:
     parser.add_argument("-g", "--genre", help="Genre.")
     parser.add_argument("-d", "--disc", help="Disc number (e.g. '1' or '1/2').")
     parser.add_argument("-c", "--comment", help="Comment.")
+    parser.add_argument("--composer", help="Composer (e.g. 'J. S. Bach').")
+    parser.add_argument("--conductor", help="Conductor.")
+    parser.add_argument("--work",
+                        help="Work / grouping (e.g. 'Symphony No. 5 in C minor').")
     parser.add_argument("--artist", help="Override artist (default: from folder).")
     parser.add_argument("--album", help="Override album (default: from folder).")
     parser.add_argument("--album-artist",
